@@ -38,7 +38,13 @@ int main() {
 	n.printVector();
 	n.setNext(n2);
 	n.printVector();
+	n2.setNext(n);	
 	cout<<"The size of r vector is "<<r.size()<<std::endl;
 	r.printVector();
+
+	cout<<"---------------------"<<std::endl;
+	r.printNode();
+	n.printNode();
+	n2.printNode();
 	return 0;
 }
