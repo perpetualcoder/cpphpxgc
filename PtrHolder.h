@@ -16,6 +16,9 @@ class PtrHolder {
 		which = 0;
 		rc[0] = rc[1] = rc[2] = 0;
 	}
+	~PtrHolder() {
+		std::cout<<"Object is being destroyed"<<std::endl;
+	}
 	void printNode() {
 		cout<<"Object"<<std::endl;
 		printVector();
@@ -28,6 +31,11 @@ class PtrHolder {
 		}
 		return false;
 
+	}
+	bool isDeletable() {
+		if (rc[0] == rc[1] && rc[1] == rc[2] && rc[2] == 0)
+			return true;
+		return false;
 	}
 	void printRC() {
 		cout<<"which:"<<which<<":"<<rc[0]<<","<<rc[1]<<","<<rc[2]<<std::endl;
@@ -48,6 +56,24 @@ class PtrHolder {
 		else
 			return NULL;
 	}
+};
+
+template<class T>
+class SWPPtr {
+	public:
+	T p;
+	SWPPtr(T ptr) {
+		p = ptr;
+		p->rc[p->which]++;
+	}
+	~SWPPtr() {
+		cout<<"Destructor called!";
+		p->rc[p->which]--;
+		if (p->isDeletable())
+			delete p;
+	}
+
+
 };
 
 template <class T>
