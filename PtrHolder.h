@@ -9,6 +9,8 @@ class PtrHolder {
 	public:
 	std::vector<void *> members;
 	std::vector<int> whichs;
+	bool phantom;
+	bool schd;
 	int index;
 	int which;
 	int rc[3];
@@ -16,6 +18,8 @@ class PtrHolder {
 		index = 0;
 		which = 0;
 		rc[0] = rc[1] = rc[2] = 0;
+		phantom = false;
+		schd = false;
 	}
 	~PtrHolder() {
 		std::cout<<"Object is being destroyed"<<std::endl;
@@ -39,11 +43,21 @@ class PtrHolder {
 			return true;
 		return false;
 	}
+	void simpleDecrementRC(int wbit) {
+	if (which == wbit) 
+                         rc[which]--;
+                 else if(which != wbit)
+                         rc[1-which]--;
+	
+
+	}
 	void decrementRC(int wbit) {
 		if (which == wbit) 
 			rc[which]--;
-		else if(which != wbit) 
+		else if(wbit != 2 && which != wbit) 
 			rc[1-which]--;
+		else 
+			rc[wbit]--;
 		if (isDeletable()) {
 			for(int i=0; i< members.size();i++) {
 				void *m = members[i];
@@ -53,9 +67,91 @@ class PtrHolder {
 				p->decrementRC(whichs[i]);			
 				}
 			}
-			cout<<"Deleting this object"<<std::endl;
-			delete this;
+			cout<<"schd"<<schd<<" for "<< this<<std::endl;
+			if (!schd) {
+				cout<<"Deleting this object"<<std::endl;
+				delete this;
+			}
 		}
+		else if(rc[which] == 0 && rc[2] == 0 && rc[1-which] != 0) {
+			cout<<"Phantomization starts"<<std::endl;
+			std::vector<PtrHolder *> process_list;
+			collapseStart(process_list);
+			cout<<"List size"<<process_list.size()<<std::endl;
+			bool recovery = false;
+			for (int i = 0 ; i < process_list.size(); i++ ) {
+				PtrHolder *p = process_list[i];
+				if (p->rc[p->which] > 0) recovery = true;
+
+			}
+			if (!recovery) {
+			schd = true;
+			for(int i=0; i< members.size();i++) {
+                                 void *m = members[i];
+                                 if (m != 0) {
+                                         cout<<"pppPrinting this"<<this<<std::endl;
+                                 PtrHolder *p = reinterpret_cast<PtrHolder*>(m);
+                                 p->decrementRC(whichs[i]);
+				 members[i] = NULL;
+                                 }
+                         }
+			 delete this;
+
+			}
+		}
+	}
+	void incrementRC(int wbit, std::vector<PtrHolder*>& list) {
+		cout<<"Increment RC "<<wbit<<" is called"<<"phantom"<<phantom<<std::endl;
+		if (wbit > 1) {
+			rc[wbit]++;
+			if (phantom) return;
+			cout<<"Phantom bit set"<<std::endl;
+			phantom = true;
+			list.push_back(this);
+			if (rc[which] > 0) return;
+			else if (rc[1-which] > 0) {
+				collapseStart(list);
+
+			}	
+			else if (rc[which] == 0 && rc[1-which] == 0 && rc[2] > 0) {
+				
+				phantomize(list);
+			}
+			
+				
+		}
+
+	}
+	void phantomize(std::vector<PtrHolder*>& list) {
+	cout<<"Phantomization is going on"<<std::endl;
+	for (int i = 0; i < members.size(); i++)  {
+                         void *m = members[i];
+                         if ( m != 0) {
+                                 PtrHolder *p = reinterpret_cast<PtrHolder*>(m);
+                                 p->simpleDecrementRC(whichs[i]);
+                                 whichs[i] = 2;
+                                 p->incrementRC(whichs[i], list);
+                         }
+ 
+                 }
+
+	} 
+	void collapseStart(std::vector<PtrHolder*>& list) {
+		cout<<"Collapse started"<<this<<std::endl;
+		which = 1 - which;
+		phantom = true;
+		list.push_back(this);
+		for (int i = 0; i < members.size(); i++)  {
+			void *m = members[i];
+			if ( m != 0) {
+				PtrHolder *p = reinterpret_cast<PtrHolder*>(m);
+				p->simpleDecrementRC(whichs[i]);
+				whichs[i] = 2;
+				p->incrementRC(whichs[i], list);
+			}
+
+		}
+
 	}
 	void printRC() {
 		cout<<"which:"<<which<<":"<<rc[0]<<","<<rc[1]<<","<<rc[2]<<std::endl;

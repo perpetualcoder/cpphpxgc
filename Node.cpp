@@ -35,7 +35,21 @@ Node* simpleLinkedList() {
 	b->setNext(*c);
 	return a;
 }
+Node* circularLinkedList() {
+	Node *a = new Node(1);
+	Node *b = new Node(2);
+	Node *c = new Node(3);
+	cout<<a<<","<<b<<","<<c<<endl;
+	a->setNext(*b);
+	b->setNext(*c);
+	c->setNext(*a);
+	return a;
+
+}
 void performSimpleLinkedListDeleteTest(Node* ptr) {
+	SWPPtr<Node*> head(ptr);
+}
+void performCircularLinkedListDeleteTest(Node *ptr) {
 	SWPPtr<Node*> head(ptr);
 }
 void testSimpleLLDeleteTest() {
@@ -62,6 +76,11 @@ void testSimpleLLDeleteTest() {
 //		return true;
 //	else 
 //		return false;
+}
+
+void testCircularLinkedList() {
+	Node *cl = circularLinkedList();
+	performCircularLinkedListDeleteTest(cl);
 }
  
 int mains() {
@@ -96,8 +115,10 @@ int mains() {
 	return 0;
 }
 int main() {
- 	cout<<"Simple Linked List test"<<std::endl;
-	testSimpleLLDeleteTest();
+// 	cout<<"Simple Linked List test"<<std::endl;
+//	testSimpleLLDeleteTest();
+	cout<<"Circular Linked List test"<<std::endl;
+	testCircularLinkedList();
 	return 0;
 
 }
