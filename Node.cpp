@@ -44,7 +44,6 @@ Node* circularLinkedList() {
 	b->setNext(*c);
 	c->setNext(*a);
 	return a;
-
 }
 void performSimpleLinkedListDeleteTest(Node* ptr) {
 	SWPPtr<Node*> head(ptr);
@@ -53,34 +52,30 @@ void performCircularLinkedListDeleteTest(Node *ptr) {
 	SWPPtr<Node*> head(ptr);
 }
 void testSimpleLLDeleteTest() {
-/*	Node *x = new Node(4);
-	if (x != NULL)
-		std::cout<<"IT IS NOT NULL"<<std::endl;
-	else
-		std::cout<<"IT IS NULL"<<std::endl;
-	delete x;
-	Node *xy = static_cast<Node *>(x);
-	if ( xy != NULL)
-		std::cout<<" IT IS NOT DELETED"<<std::endl;
-	else
-		std::cout<<"IT IS DELETED"<<std::endl;
-*/	Node *ll = simpleLinkedList();
-	//cout<<"Before performing test"<<ll;
+	Node *ll = simpleLinkedList();
 	performSimpleLinkedListDeleteTest(ll);
-	
-//	Node *llr = dynamic_cast<Node*>(ll);
-//	cout<<"After test"<<llr;
-//	cout<<"AFter performing test"<<ll;
-//	return true;
-//	if (*ll == NULL)
-//		return true;
-//	else 
-//		return false;
 }
-
 void testCircularLinkedList() {
 	Node *cl = circularLinkedList();
 	performCircularLinkedListDeleteTest(cl);
+}
+void performRecoveryCircularLinkedList(Node *ptr) {
+	SWPPtr<Node*> head(ptr);
+}
+void testCircularLinkedListRecovery() {
+	Node *a = new Node(1);
+	Node *b = new Node(2);
+	Node *c = new Node(3);
+	Node *d = new Node(4);
+	cout<<a<<","<<b<<","<<c<<","<<d<<std::endl;
+	a->setNext(*b);
+	b->setNext(*c);
+	c->setNext(*d);
+	d->setNext(*a);
+	Node *e = new Node(5);
+	SWPPtr<Node*> support(e);
+	e->setNext(*c);
+	performRecoveryCircularLinkedList(a); 
 }
  
 int mains() {
@@ -118,7 +113,8 @@ int main() {
 // 	cout<<"Simple Linked List test"<<std::endl;
 //	testSimpleLLDeleteTest();
 	cout<<"Circular Linked List test"<<std::endl;
-	testCircularLinkedList();
+//	testCircularLinkedList();
+	testCircularLinkedListRecovery();
 	return 0;
 
 }

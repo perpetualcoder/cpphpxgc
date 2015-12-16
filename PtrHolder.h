@@ -44,12 +44,12 @@ class PtrHolder {
 		return false;
 	}
 	void simpleDecrementRC(int wbit) {
-	if (which == wbit) 
+		if (which == wbit) 
                          rc[which]--;
-                 else if(which != wbit)
+                else if(wbit != 2 && which != wbit)
                          rc[1-which]--;
-	
-
+		else
+			rc[wbit]--;
 	}
 	void decrementRC(int wbit) {
 		if (which == wbit) 
@@ -98,7 +98,48 @@ class PtrHolder {
 			 delete this;
 
 			}
+			else {
+				cout<<"Recovery procedure initiated."<<std::endl;
+				for( int i = 0; i < process_list.size(); i++) {
+					PtrHolder *p = process_list[i];
+					if (p->rc[p->which] > 0 ) {
+						p->recover();
+					}
+
+				}
+				if (!phantom && rc[which] > 0) {
+					cout<<"Collapse Recovery is successful!"<<std::endl;
+					
+				}
+
+			}
 		}
+	}
+	void recover() {
+		std::cout<<"Recover called on "<<this<<std::endl;
+		if ( phantom ) {
+			phantom = false;
+			for(int i = 0; i < members.size(); i++) {
+				void *m = members[i];
+				if (m != 0) {
+					PtrHolder *p  = reinterpret_cast<PtrHolder*>(m);
+					p->simpleDecrementRC(whichs[i]);
+					if (p->rc[p->which] > 0 ) {
+						p->simpleIncrementRC(1 - p->which);
+						whichs[i] = 1 - p->which;
+					}
+					else {
+						p->simpleIncrementRC(p->which);
+						whichs[i] = p->which;
+					}
+					p->recover();
+				}
+			}
+
+		}
+	}
+	void simpleIncrementRC(int wbit) {
+		rc[wbit]++;
 	}
 	void incrementRC(int wbit, std::vector<PtrHolder*>& list) {
 		cout<<"Increment RC "<<wbit<<" is called"<<"phantom"<<phantom<<std::endl;
